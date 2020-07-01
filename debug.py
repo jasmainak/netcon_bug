@@ -30,7 +30,7 @@ def artificial_cell(event_times):
     return nrn_netcon
 
 
-def demo(is_class=False):
+def demo(is_class=False, is_list=False):
     print('Begin demo')
 
     # create parallel context
@@ -45,12 +45,21 @@ def demo(is_class=False):
                 pc.set_gid2node(gid, rank)
                 spike_times = np.random.rand(20)
                 if is_class:
-                    self.feeds.append(ArtificialCell(spike_times))
-                    pc.cell(gid, self.feeds[-1].nrn_netcon)
+                    feed = ArtificialCell(spike_times)
+                    if is_list:
+                        self.feeds.append(feed)
+                        pc.cell(gid, self.feeds[-1].nrn_netcon)
+                    else:
+                        pc.cell(gid, feed.nrn_netcon)
                 else:
-                    feed = artificial_cell(spike_times)
-                    pc.cell(gid, feed)
-                print(f'Completed: add input feed to artificial cell {gid}')
+                    nrn_netcon = artificial_cell(spike_times)
+                    if is_list:
+                        self.feeds.append(nrn_netcon)
+                        pc.cell(gid, self.feeds[-1])
+                    else:
+                        pc.cell(gid, nrn_netcon)
+
+                print(f'gid={gid}, is_class={is_class}, is_list={is_list}')
 
     OuterClass()
     pc.gid_clear()
@@ -60,5 +69,9 @@ def demo(is_class=False):
 
 # run demos
 ################################################
-demo(is_class=True)
-demo(is_class=False)
+demo(is_class=True, is_list=True)
+
+# none of these work
+demo(is_class=False, is_list=True)
+demo(is_class=True, is_list=False)
+demo(is_class=False, is_list=False)
